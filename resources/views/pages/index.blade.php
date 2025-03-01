@@ -32,7 +32,7 @@
         <!-- Search Bar -->
         <div class="p-4">
             <form action="{{ route('search') }}" method="GET">
-                <input type="text" name="query" placeholder="Search Store"
+                <input type="text" name="query" placeholder="Search Menu"
                     class="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
             </form>
         </div>
@@ -42,24 +42,32 @@
             <div class="flex justify-between items-center pb-4">
                 <h2 class="text-lg font-semibold">Lokasi</h2>
             </div>
-            <div id="map" class="w-full h-64 rounded-lg shadow-md"></div>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=-4.896812,105.204187&travelmode=driving"
+                target="_blank">
+                <div id="map" class="w-full h-64 rounded-lg shadow-md relative">
+                    <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-center py-2">
+                        Klik untuk membuka rute di Google Maps
+                    </div>
+                </div>
+            </a>
             <script>
                 function initMap() {
                     var sellerLocation = {
-                        lat: -4.896812,
-                        lng: 105.204187
-                    }; // Example coordinates for Jakarta
+                        lat: -4.896867,
+                        lng: 105.204121
+
+                    }; // Koordinat lokasi penjual
                     var map = new google.maps.Map(document.getElementById('map'), {
-                        zoom: 15,
-                        center: sellerLocation
+                        zoom: 15, // Level zoom
+                        center: sellerLocation // Pusat peta
                     });
                     var marker = new google.maps.Marker({
-                        position: sellerLocation,
-                        map: map
+                        position: sellerLocation, // Posisi marker
+                        map: map // Peta yang digunakan
                     });
                 }
             </script>
-            <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
+            <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDTv3XxmfCMqlw7E2AP_gErOnIX7v9GhvI&callback=initMap"></script>
         </div>
 
         <!-- Exclusive Offer -->
@@ -82,13 +90,15 @@
                         <div class="text-xs text-gray-600 flex-grow mt-1">{{ $product->description }}</div>
 
                         <!-- Harga Produk -->
-                        <div class="mt-2 text-lg font-bold text-green-600">Rp. {{ number_format($product->price, 2) }}
+                        <div class="mt-2 text-lg font-bold text-green-600">Rp. {{ number_format($product->price, 0) }}
                         </div>
 
                         <!-- Tombol Tambah ke Keranjang -->
-                        <button class="bg-green-500 text-white rounded-full w-8 h-8 mt-2 hover:bg-green-600 transition duration-300 mx-auto flex items-center justify-center add-to-cart" data-product-id="{{ $product->id }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
+                        <button
+                            class="bg-green-500 text-white rounded-full w-8 h-8 mt-2 hover:bg-green-600 transition duration-300 mx-auto flex items-center justify-center add-to-cart"
+                            data-product-id="{{ $product->id }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
                             </svg>
@@ -100,18 +110,23 @@
 
         <!-- Bottom Navigation -->
         <div class="fixed bottom-0 left-0 w-full bg-white shadow-md py-4 flex justify-around border-t rounded-t-2xl">
-            <button class="text-green-500 flex flex-col items-center text-sm hover:text-green-600 transition duration-300">
+            <button
+                class="text-green-500 flex flex-col items-center text-sm hover:text-green-600 transition duration-300">
                 <a href="/" class="flex flex-col items-center"></a>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10l9-7 9 7v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10z" />
-                    </svg>
-                    <span>Explore</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 10l9-7 9 7v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10z" />
+                </svg>
+                <span>Explore</span>
                 </a>
             </button>
             <button class="flex flex-col items-center text-sm hover:text-green-600 transition duration-300">
                 <a href="{{ route('cart.view') }}" class="flex flex-col items-center relative">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 24 24" stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1 4h11.6l-1-4M7 13h10" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 24 24" stroke="currentColor"
+                        class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1 4h11.6l-1-4M7 13h10" />
                     </svg>
                     <span>Cart</span>
                     <span class="cart-count" id="cart-count">{{ session('cart') ? count(session('cart')) : 0 }}</span>
@@ -124,7 +139,7 @@
             $('.add-to-cart').click(function() {
                 var productId = $(this).data('product-id');
                 $.ajax({
-                    url: '{{ route("cart.add", ":id") }}'.replace(':id', productId),
+                    url: '{{ route('cart.add', ':id') }}'.replace(':id', productId),
                     method: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}'
