@@ -3,17 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Product;
+use App\Models\Product; // Assuming you have a Product model
 use App\Models\Order; // Assuming you have an Order model
 use App\Models\OrderItem; // Assuming you have an OrderItem model
+use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
 {
     // Tambah produk ke keranjang
     public function addToCart(Request $request, $productId)
     {
-        $product = Product::findOrFail($productId); // Cari produk berdasarkan ID
         $cart = session()->get('cart', []); // Ambil data keranjang dari session
+        $product = Product::find($productId); // Ambil produk dari database
 
         // Cek apakah produk sudah ada di keranjang
         if (isset($cart[$productId])) {
@@ -59,11 +60,26 @@ class CartController extends Controller
         $cart = session()->get('cart', []); // Ambil data keranjang dari session
 
         if (isset($cart[$productId])) {
-            $cart[$productId]['quantity'] = $request->quantity; // Update quantity
+            if ($request->action == 'increase') {
+                $cart[$productId]['quantity'] += 1; // Tambah quantity
+            } elseif ($request->action == 'decrease' && $cart[$productId]['quantity'] > 1) {
+                $cart[$productId]['quantity'] -= 1; // Kurangi quantity
+            }
             session()->put('cart', $cart); // Simpan kembali data keranjang ke session
+
+            // Hitung total harga
+            $totalAmount = array_sum(array_map(function ($item) {
+                return $item['price'] * $item['quantity'];
+            }, $cart));
+
+            return response()->json([
+                'success' => true,
+                'quantity' => $cart[$productId]['quantity'],
+                'total_amount' => $totalAmount // Kirim total harga yang diperbarui
+            ]);
         }
 
-        return redirect()->back()->with('success', 'Keranjang berhasil diperbarui!');
+        return response()->json(['success' => false]);
     }
 
     // Checkout process
@@ -79,7 +95,9 @@ class CartController extends Controller
         $order = Order::create([
             'name_customer' => $request->input('name_customer'),
             'address' => $request->input('address'),
-            'total_price' => array_sum(array_map(function($item) { return $item['price'] * $item['quantity']; }, $cart)),
+            'total_price' => array_sum(array_map(function ($item) {
+                return $item['price'] * $item['quantity'];
+            }, $cart)),
             'status' => 'pending',
         ]);
 

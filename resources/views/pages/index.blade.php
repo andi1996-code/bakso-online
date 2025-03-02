@@ -18,11 +18,26 @@
             padding: 2px 6px;
             font-size: 12px;
         }
+
+        .animate-bounce {
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
     </style>
 </head>
 
 <body class="bg-gray-100">
-
     <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg rounded-lg overflow-hidden pb-16">
         <!-- Header -->
         <div class="p-4 flex justify-center items-center">
@@ -35,39 +50,6 @@
                 <input type="text" name="query" placeholder="Search Menu"
                     class="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
             </form>
-        </div>
-
-        <!-- Banner -->
-        <div class="p-4">
-            <div class="flex justify-between items-center pb-4">
-                <h2 class="text-lg font-semibold">Lokasi</h2>
-            </div>
-            <a href="https://www.google.com/maps/dir/?api=1&destination=-4.896812,105.204187&travelmode=driving"
-                target="_blank">
-                <div id="map" class="w-full h-64 rounded-lg shadow-md relative">
-                    <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-center py-2">
-                        Klik untuk membuka rute di Google Maps
-                    </div>
-                </div>
-            </a>
-            <script>
-                function initMap() {
-                    var sellerLocation = {
-                        lat: -4.896867,
-                        lng: 105.204121
-
-                    }; // Koordinat lokasi penjual
-                    var map = new google.maps.Map(document.getElementById('map'), {
-                        zoom: 15, // Level zoom
-                        center: sellerLocation // Pusat peta
-                    });
-                    var marker = new google.maps.Marker({
-                        position: sellerLocation, // Posisi marker
-                        map: map // Peta yang digunakan
-                    });
-                }
-            </script>
-            <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDTv3XxmfCMqlw7E2AP_gErOnIX7v9GhvI&callback=initMap"></script>
         </div>
 
         <!-- Exclusive Offer -->
@@ -110,50 +92,69 @@
 
         <!-- Bottom Navigation -->
         <div class="fixed bottom-0 left-0 w-full bg-white shadow-md py-4 flex justify-around border-t rounded-t-2xl">
-            <button
+            <!-- Explore -->
+            <a href="/"
                 class="text-green-500 flex flex-col items-center text-sm hover:text-green-600 transition duration-300">
-                <a href="/" class="flex flex-col items-center"></a>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                     class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 10l9-7 9 7v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10z" />
                 </svg>
                 <span>Explore</span>
-                </a>
-            </button>
-            <button class="flex flex-col items-center text-sm hover:text-green-600 transition duration-300">
-                <a href="{{ route('cart.view') }}" class="flex flex-col items-center relative">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 24 24" stroke="currentColor"
-                        class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1 4h11.6l-1-4M7 13h10" />
-                    </svg>
-                    <span>Cart</span>
-                    <span class="cart-count" id="cart-count">{{ session('cart') ? count(session('cart')) : 0 }}</span>
-                </a>
-            </button>
+            </a>
+
+            <!-- Cart -->
+            <a href="{{ route('cart.view') }}"
+                class="flex flex-col items-center text-sm hover:text-green-600 transition duration-300 relative cart-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1 4h11.6l-1-4M7 13h10" />
+                </svg>
+                <span>Cart</span>
+                <span class="cart-count" id="cart-count">{{ session('cart') ? count(session('cart')) : 0 }}</span>
+            </a>
         </div>
     </div>
+
     <script>
         $(document).ready(function() {
             $('.add-to-cart').click(function() {
-                var productId = $(this).data('product-id');
+                var productId = $(this).data('product-id'); // Ambil ID produk dari atribut data
+                var $button = $(this); // Simpan referensi tombol yang diklik
+
                 $.ajax({
-                    url: '{{ route('cart.add', ':id') }}'.replace(':id', productId),
+                    url: '{{ route('cart.add', ':id') }}'.replace(':id',
+                    productId), // Ganti :id dengan productId
                     method: 'POST',
                     data: {
-                        _token: '{{ csrf_token() }}'
+                        _token: '{{ csrf_token() }}' // Tambahkan CSRF token
                     },
                     success: function(response) {
                         if (response.success) {
+                            // Update cart count
                             var cartCount = $('#cart-count');
                             var currentCount = parseInt(cartCount.text());
                             cartCount.text(currentCount + 1);
+
+                            // Tambahkan animasi bounce ke cart count
                             cartCount.addClass('animate-bounce');
                             setTimeout(function() {
                                 cartCount.removeClass('animate-bounce');
-                            }, 1000);
+                            }, 1000); // Hapus animasi setelah 1 detik
+
+                            // Tambahkan animasi bounce ke ikon cart
+                            var cartIcon = $('.cart-icon svg');
+                            cartIcon.addClass('animate-bounce');
+                            setTimeout(function() {
+                                cartIcon.removeClass('animate-bounce');
+                            }, 1000); // Hapus animasi setelah 1 detik
                         }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error); // Tampilkan error di console
+                        alert(
+                            'Terjadi kesalahan saat menambahkan produk ke keranjang. Silakan coba lagi.');
                     }
                 });
             });
