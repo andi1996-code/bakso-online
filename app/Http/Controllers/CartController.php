@@ -7,6 +7,7 @@ use App\Models\Product; // Assuming you have a Product model
 use App\Models\Order; // Assuming you have an Order model
 use App\Models\OrderItem; // Assuming you have an OrderItem model
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
 
 class CartController extends Controller
 {
@@ -31,7 +32,7 @@ class CartController extends Controller
         }
 
         session()->put('cart', $cart); // Simpan data keranjang ke session
-        return redirect()->back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');
+        return response()->json(['success' => true]); // Return success response
     }
 
     // Tampilkan halaman keranjang
@@ -85,10 +86,19 @@ class CartController extends Controller
     // Checkout process
     public function checkout(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'name_customer' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $cart = session()->get('cart', []);
 
         if (empty($cart)) {
-            return redirect()->back()->with('error', 'Keranjang Anda kosong.');
+            return response()->json(['error' => 'Keranjang Anda kosong.'], 400);
         }
 
         // Create a new order
@@ -102,6 +112,7 @@ class CartController extends Controller
         ]);
 
         // Create order items
+        $productList = "";
         foreach ($cart as $productId => $item) {
             OrderItem::create([
                 'order_id' => $order->id,
@@ -109,11 +120,24 @@ class CartController extends Controller
                 'quantity' => $item['quantity'],
                 'price' => $item['price'],
             ]);
+            $productList .= "{$item['name']} (Qty: {$item['quantity']}) - Rp. " . number_format($item['price'] * $item['quantity'], 0) . "\n";
         }
 
         // Clear the cart
         session()->forget('cart');
 
-        return redirect()->route('cart.view')->with('success', 'Transaksi berhasil! Pesanan Anda telah diterima.');
+        // Prepare WhatsApp message
+        $message = "Data Pembeli:\nNama: {$request->input('name_customer')}\nAlamat: {$request->input('address')}\n\nList Produk:\n{$productList}\nTotal Bayar: Rp. " . number_format($order->total_price, 0) . "\n\nTerimakasih 🙏";
+
+        // Return WhatsApp URL
+        $whatsappUrl = "https://wa.me/6281221788707?text=" . urlencode($message); // Replace with seller's WhatsApp number
+
+        return response()->json(['url' => $whatsappUrl]);
+    }
+
+    public function getCartCount()
+    {
+        $cart = session()->get('cart', []);
+        return response()->json(['count' => count($cart)]);
     }
 }

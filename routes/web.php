@@ -18,3 +18,4 @@ Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.view');
 Route::delete('/cart/remove/{productId}', [CartController::class, 'removeFromCart'])->name('cart.remove');
 Route::put('/cart/update/{productId}', [CartController::class, 'updateCart'])->name('cart.update');
 Route::post('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+Route::get('/cart/count', [CartController::class, 'getCartCount'])->name('cart.count');

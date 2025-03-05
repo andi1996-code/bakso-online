@@ -120,7 +120,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1 4h11.6l-1-4M7 13h10" />
                     </svg>
-                    <span>Cart</span>
+                    <span>Keranjang</span>
                 </a>
             </button>
         </div>
@@ -158,6 +158,45 @@
                         console.error('Error:', error); // Tampilkan error di console
                     }
                 });
+            });
+
+            // Client-side validation for checkout form
+            $('form[action="{{ route('cart.checkout') }}"]').submit(function(e) {
+                var isValid = true;
+                $(this).find('input, textarea').each(function() {
+                    if ($(this).val() === '') {
+                        isValid = false;
+                        $(this).addClass('border-red-500');
+                    } else {
+                        $(this).removeClass('border-red-500');
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Please fill out all fields.');
+                } else {
+                    // Submit the form via AJAX
+                    var form = $(this);
+                    e.preventDefault();
+                    $.ajax({
+                        url: form.attr('action'),
+                        method: 'POST',
+                        data: form.serialize(),
+                        success: function(response) {
+                            if (response.url) {
+                                // Open WhatsApp link in a new tab
+                                window.open(response.url, '_blank');
+                                // Clear the cart
+                                $('#cart-items').html('<p class="text-center text-gray-600">Keranjang Anda kosong.</p>');
+                                $('#total-amount').text('Rp. 0');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error); // Tampilkan error di console
+                        }
+                    });
+                }
             });
         });
     </script>
