@@ -7,7 +7,18 @@
     <title>Bakso Ulfa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
     <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+        }
+
+        .header-font {
+            font-family: 'Pacifico', cursive;
+            font-size: 5rem; /* Increased font size */
+        }
+
         .cart-count {
             position: absolute;
             top: -10px;
@@ -42,7 +53,7 @@
     <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg rounded-lg overflow-hidden pb-16">
         <!-- Header -->
         <div class="p-4 flex justify-center items-center">
-            <div class="text-lg font-semibold text-center">Bakso Kuah Mba Ulfa</div>
+            <div class="text-xl font-semibold text-center text-green-700 header-font">Bakso Kuah Mba Ulfa</div>
         </div>
 
         <!-- Search Bar -->
@@ -56,7 +67,7 @@
         <!-- Banner -->
         <div class="p-4">
             <div class="flex justify-between items-center pb-4">
-                <h2 class="text-lg font-semibold">Lokasi</h2>
+                <h2 class="text-lg font-semibold text-green-700">Lokasi</h2>
             </div>
             <a href="https://www.google.com/maps/dir/?api=1&destination=-4.896812,105.204187&travelmode=driving"
                 target="_blank">
@@ -89,7 +100,7 @@
         <!-- Exclusive Offer -->
         <div class="p-4">
             <div class="flex justify-between items-center">
-                <h2 class="text-lg font-semibold">Daftar Menu</h2>
+                <h2 class="text-lg font-semibold text-green-700">Daftar Menu</h2>
             </div>
             <div class="grid grid-cols-2 gap-3 p-3">
                 @foreach ($products as $product)
@@ -100,7 +111,7 @@
                             class="w-full h-32 object-cover rounded-lg mb-2" alt="{{ $product->name }}">
 
                         <!-- Nama Produk -->
-                        <div class="mt-1 font-semibold text-md text-gray-800">{{ $product->name }}</div>
+                        <div class="mt-1 font-semibold text-md text-[#333333]">{{ $product->name }}</div>
 
                         <!-- Deskripsi Produk -->
                         <div class="text-xs text-gray-600 flex-grow mt-1">{{ $product->description }}</div>

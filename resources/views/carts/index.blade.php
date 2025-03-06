@@ -29,12 +29,13 @@
                             <img src="{{ asset('storage/' . $item['image']) }}"
                                 class="w-16 h-16 object-cover rounded-lg mr-4" alt="{{ $item['name'] }}">
                             <div>
-                                <div class="font-semibold">{{ $item['name'] }}</div>
+                                <div class="font-semibold  text-green-700">{{ $item['name'] }}</div>
                                 <div class="text-sm text-gray-600">Rp. {{ number_format($item['price'], 0) }}</div>
                                 <div class="text-sm text-gray-600 flex items-center">
                                     Jumlah:
                                     <div class="flex items-center ml-2">
-                                        <button class="text-gray-500 hover:text-gray-700 update-cart"
+                                        <button
+                                            class="text-white hover:text-green-700 update-cart bg-green-500 p-1 rounded-full"
                                             data-action="decrease">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor">
@@ -43,7 +44,8 @@
                                             </svg>
                                         </button>
                                         <span class="mx-2 quantity">{{ $item['quantity'] }}</span>
-                                        <button class="text-gray-500 hover:text-gray-700 update-cart"
+                                        <button
+                                            class="text-white hover:text-green-700 update-cart bg-green-500 p-1 rounded-full"
                                             data-action="increase">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor">
@@ -78,13 +80,23 @@
                             {{ number_format(array_sum(array_map(function ($item) {return $item['price'] * $item['quantity'];}, $cart)),0) }}
                         </div>
                     </div>
-                    <form action="{{ route('cart.checkout') }}" method="POST">
+                    <form action="{{ route('cart.checkout') }}" method="POST" id="checkout-form">
                         @csrf
                         <div class="mt-4">
                             <label for="name_customer" class="block text-sm font-medium text-gray-700">Nama
                                 Pelanggan</label>
                             <input type="text" name="name_customer" id="name_customer" required
                                 class="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                        </div>
+                        <div class="mt-4">
+                            <label for="location" class="block text-sm font-medium text-gray-700">Lokasi
+                                Pengiriman</label>
+                            <select name="location" id="location" required
+                                class="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                                <option value="Poncowati">Poncowati</option>
+                                <option value="Yukum Jaya">Yukum Jaya</option>
+                                <option value="Bandar Jaya">Bandar Jaya</option>
+                            </select>
                         </div>
                         <div class="mt-4">
                             <label for="address" class="block text-sm font-medium text-gray-700">Alamat</label>
@@ -120,7 +132,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1 4h11.6l-1-4M7 13h10" />
                     </svg>
-                    <span>Keranjang</span>
+                    <span>Cart</span>
                 </a>
             </button>
         </div>
@@ -163,7 +175,7 @@
             // Client-side validation for checkout form
             $('form[action="{{ route('cart.checkout') }}"]').submit(function(e) {
                 var isValid = true;
-                $(this).find('input, textarea').each(function() {
+                $(this).find('input, textarea, select').each(function() {
                     if ($(this).val() === '') {
                         isValid = false;
                         $(this).addClass('border-red-500');
@@ -176,6 +188,11 @@
                     e.preventDefault();
                     alert('Please fill out all fields.');
                 } else {
+                    // Append location to address
+                    var location = $('#location').val();
+                    var address = $('#address').val();
+                    $('#address').val(address + ', ' + location);
+
                     // Submit the form via AJAX
                     var form = $(this);
                     e.preventDefault();
@@ -188,7 +205,9 @@
                                 // Open WhatsApp link in a new tab
                                 window.open(response.url, '_blank');
                                 // Clear the cart
-                                $('#cart-items').html('<p class="text-center text-gray-600">Keranjang Anda kosong.</p>');
+                                $('#cart-items').html(
+                                    '<p class="text-center text-gray-600">Keranjang Anda kosong.</p>'
+                                );
                                 $('#total-amount').text('Rp. 0');
                             }
                         },
