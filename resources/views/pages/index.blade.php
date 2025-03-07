@@ -16,7 +16,6 @@
 
         .header-font {
             font-family: 'Pacifico', cursive;
-            font-size: 5rem; /* Increased font size */
         }
 
         .cart-count {
@@ -53,7 +52,7 @@
     <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg rounded-lg overflow-hidden pb-16">
         <!-- Header -->
         <div class="p-4 flex justify-center items-center">
-            <div class="text-xl font-semibold text-center text-green-700 header-font">Bakso Kuah Mba Ulfa</div>
+            <h1 class="font-semibold text-center text-green-700 text-3xl header-font">Bakso Kuah Mba Ulfa</h1>
         </div>
 
         <!-- Search Bar -->

@@ -158,7 +158,7 @@ class CartController extends Controller
 
         $customerDetails = [
             'first_name' => $request->input('name_customer'),
-            'last_name' => '',
+            'last_name' => $request->input('name_customer'),
             'address' => $request->input('address'),
         ];
 
@@ -169,6 +169,7 @@ class CartController extends Controller
         ];
 
         try {
+
             $snapToken = Snap::getSnapToken($transaction);
             return response()->json(['snap_token' => $snapToken, 'whatsapp_url' => $whatsappUrl]);
         } catch (\Exception $e) {
