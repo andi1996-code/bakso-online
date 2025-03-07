@@ -7,6 +7,7 @@
     <title>Keranjang Belanja</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 </head>
 
 <body class="bg-gray-100">
@@ -112,6 +113,16 @@
             @endif
         </div>
 
+        <!-- Payment Success Modal -->
+        <div id="payment-success-modal" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm mx-auto">
+                <h2 class="text-2xl font-semibold mb-4 text-green-600">Pembayaran Sukses!</h2>
+                <p class="mb-4 text-gray-700">Klik link di bawah untuk konfirmasi ke WhatsApp Admin:</p>
+                <a id="whatsapp-link" href="#" target="_blank" class="text-green-800 underline">Konfirmasi ke WhatsApp Admin</a>
+                <a href="/"><button id="close-modal" class="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition duration-300">Tutup</button></a>
+            </div>
+        </div>
+
         <!-- Bottom Navigation -->
         <div class="fixed bottom-0 left-0 w-full bg-white shadow-md py-4 flex justify-around border-t rounded-t-2xl">
             <button class="flex flex-col items-center text-sm hover:text-green-600 transition duration-300">
@@ -174,48 +185,51 @@
 
             // Client-side validation for checkout form
             $('form[action="{{ route('cart.checkout') }}"]').submit(function(e) {
-                var isValid = true;
-                $(this).find('input, textarea, select').each(function() {
-                    if ($(this).val() === '') {
-                        isValid = false;
-                        $(this).addClass('border-red-500');
-                    } else {
-                        $(this).removeClass('border-red-500');
+                e.preventDefault();
+                var form = $(this);
+
+                // Append location to address
+                var location = $('#location').val();
+                var address = $('#address').val();
+                $('#address').val(address + ', ' + location);
+
+                $.ajax({
+                    url: form.attr('action'),
+                    method: 'POST',
+                    data: form.serialize(),
+                    success: function(response) {
+                        if (response.snap_token) {
+                            snap.pay(response.snap_token, {
+                                onSuccess: function(result) {
+                                    alert('Payment success!');
+                                    // Display WhatsApp link in modal
+                                    $('#whatsapp-link').attr('href', response.whatsapp_url + "%0AStatus%20Pembayaran:%20sukses");
+                                    $('#payment-success-modal').removeClass('hidden');
+                                    $('#whatsapp-link').click(function() {
+                                        $(this).addClass('pointer-events-none text-gray-500');
+                                    });
+                                },
+                                onPending: function(result) {
+                                    alert('Waiting for your payment!');
+                                },
+                                onError: function(result) {
+                                    alert('Payment failed!');
+                                },
+                                onClose: function() {
+                                    alert('You closed the popup without finishing the payment');
+                                }
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
                     }
                 });
+            });
 
-                if (!isValid) {
-                    e.preventDefault();
-                    alert('Please fill out all fields.');
-                } else {
-                    // Append location to address
-                    var location = $('#location').val();
-                    var address = $('#address').val();
-                    $('#address').val(address + ', ' + location);
-
-                    // Submit the form via AJAX
-                    var form = $(this);
-                    e.preventDefault();
-                    $.ajax({
-                        url: form.attr('action'),
-                        method: 'POST',
-                        data: form.serialize(),
-                        success: function(response) {
-                            if (response.url) {
-                                // Open WhatsApp link in a new tab
-                                window.open(response.url, '_blank');
-                                // Clear the cart
-                                $('#cart-items').html(
-                                    '<p class="text-center text-gray-600">Keranjang Anda kosong.</p>'
-                                );
-                                $('#total-amount').text('Rp. 0');
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Error:', error); // Tampilkan error di console
-                        }
-                    });
-                }
+            // Close modal
+            $('#close-modal').click(function() {
+                $('#payment-success-modal').addClass('hidden');
             });
         });
     </script>

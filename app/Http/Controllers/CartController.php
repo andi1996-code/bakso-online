@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Product; // Assuming you have a Product model
-use App\Models\Order; // Assuming you have an Order model
-use App\Models\OrderItem; // Assuming you have an OrderItem model
+use App\Models\Product;
+use App\Models\Order;
+use App\Models\OrderItem;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use Midtrans\Config;
+use Midtrans\Snap;
 
 class CartController extends Controller
 {
@@ -132,7 +134,46 @@ class CartController extends Controller
         // Return WhatsApp URL
         $whatsappUrl = "https://wa.me/6281221788707?text=" . urlencode($message); // Replace with seller's WhatsApp number
 
-        return response()->json(['url' => $whatsappUrl]);
+        // Midtrans configuration
+        Config::$serverKey = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production');
+        Config::$isSanitized = config('midtrans.is_sanitized');
+        Config::$is3ds = config('midtrans.is_3ds');
+
+        // Prepare Midtrans transaction details
+        $transactionDetails = [
+            'order_id' => $order->id,
+            'gross_amount' => $order->total_price,
+        ];
+
+        $itemDetails = [];
+        foreach ($cart as $productId => $item) {
+            $itemDetails[] = [
+                'id' => $productId,
+                'price' => $item['price'],
+                'quantity' => $item['quantity'],
+                'name' => $item['name'],
+            ];
+        }
+
+        $customerDetails = [
+            'first_name' => $request->input('name_customer'),
+            'last_name' => '',
+            'address' => $request->input('address'),
+        ];
+
+        $transaction = [
+            'transaction_details' => $transactionDetails,
+            'item_details' => $itemDetails,
+            'customer_details' => $customerDetails,
+        ];
+
+        try {
+            $snapToken = Snap::getSnapToken($transaction);
+            return response()->json(['snap_token' => $snapToken, 'whatsapp_url' => $whatsappUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function getCartCount()
